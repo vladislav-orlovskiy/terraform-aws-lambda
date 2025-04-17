@@ -33,7 +33,6 @@ locals {
 
   script = <<EOF
 #!/bin/bash
-
 if [[ '${var.target_version}' == '${var.current_version != "" ? var.current_version : local.current_version}' ]]; then
   echo "Skipping deployment because target version (${var.target_version}) is already the current version"
   exit 0
@@ -111,6 +110,8 @@ resource "local_file" "deploy_script" {
   content              = local.script
 }
 
+
+
 resource "null_resource" "deploy" {
   count = var.create && var.create_deployment && var.run_deployment ? 1 : 0
 
@@ -125,7 +126,12 @@ resource "null_resource" "deploy" {
   }
 
   depends_on = [
-    aws_iam_role_policy_attachment.hooks
+    aws_iam_role_policy_attachment.hooks,
+    data.aws_iam_policy_document.assume_role,
+    aws_iam_role.codedeploy,
+    aws_iam_role_policy_attachment.codedeploy,
+    aws_iam_role_policy_attachment.triggers,
+
   ]
 }
 
